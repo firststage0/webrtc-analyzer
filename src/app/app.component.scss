@@ -1,0 +1,40 @@
+.app-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+
+  &.dark-theme {
+    background-color: #303030;
+    color: #fff;
+  }
+}
+
+.sidenav-container {
+  flex: 1 1 auto;
+  display: flex;
+  height: 100%;
+}
+
+.sidenav {
+  width: 250px;
+  background-color: #424242;
+}
+
+.sidenav-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  flex: 1 1 auto;
+}
+
+.content {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  background: transparent;
+  height: 100%;
+  padding: 20px;
+  overflow: auto;
+}

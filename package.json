@@ -1,22 +1,38 @@
 {
   "name": "webrtc-analyzer",
   "version": "0.0.0",
+  "description": "WebRTC Log Analyzer Application",
+  "author": {
+    "name": "WebRTC Analyzer Team"
+  },
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "ng serve --watch",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "electron": "concurrently \"ng serve\" \"wait-on http://localhost:4200 && electron .\"",
+    "electron-build": "ng build && electron-builder build --win --x64",
+    "postinstall": "electron-builder install-app-deps"
   },
   "private": true,
   "dependencies": {
+    "@angular/animations": "^19.2.10",
+    "@angular/cdk": "^19.2.15",
     "@angular/common": "^19.2.0",
     "@angular/compiler": "^19.2.0",
     "@angular/core": "^19.2.0",
     "@angular/forms": "^19.2.0",
+    "@angular/material": "^19.2.15",
     "@angular/platform-browser": "^19.2.0",
     "@angular/platform-browser-dynamic": "^19.2.0",
     "@angular/router": "^19.2.0",
+    "@types/jszip": "^3.4.0",
+    "chart.js": "^4.4.9",
+    "electron-forge": "^5.2.4",
+    "electron-log": "^5.4.0",
+    "jszip": "^3.10.1",
+    "ng2-charts": "^8.0.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"
@@ -26,12 +42,56 @@
     "@angular/cli": "^19.2.11",
     "@angular/compiler-cli": "^19.2.0",
     "@types/jasmine": "~5.1.0",
+    "concurrently": "^9.1.2",
+    "electron": "^36.2.0",
+    "electron-builder": "^26.0.12",
+    "electron-is-dev": "^3.0.1",
     "jasmine-core": "~5.6.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
-    "typescript": "~5.7.2"
+    "typescript": "~5.7.2",
+    "wait-on": "^8.0.3"
+  },
+  "main": "electron/main.js",
+  "build": {
+    "appId": "com.webrtc.analyzer",
+    "productName": "WebRTC Analyzer",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "node_modules/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "node_modules",
+        "to": "node_modules"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "WebRTC Analyzer"
+    },
+    "asar": false,
+    "removePackageScripts": true,
+    "removePackageKeywords": true
   }
 }

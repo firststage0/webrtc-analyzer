@@ -1,1 +1,56 @@
 /* You can add global styles to this file, and also import other style files */
+@use '@angular/material' as mat;
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+// Стили для уведомлений
+.success-snackbar {
+  background-color: #4caf50;
+  color: white;
+
+  .mat-simple-snackbar-action {
+    color: white;
+  }
+}
+
+.error-snackbar {
+  background-color: #f44336;
+  color: white;
+
+  .mat-simple-snackbar-action {
+    color: white;
+  }
+}
+
+// Стили для темной темы
+.dark-theme {
+  .mat-mdc-snack-bar-container {
+    --mdc-snackbar-container-color: #424242;
+    --mat-mdc-snack-bar-button-color: #fff;
+    --mdc-snackbar-supporting-text-color: #fff;
+  }
+  .mat-mdc-menu-panel {
+    background: #333 !important;
+    color: #fff !important;
+  }
+  .mat-mdc-menu-content .mat-mdc-menu-item {
+    color: #fff !important;
+  }
+  .mat-mdc-menu-item .mat-icon {
+    color: #fff !important;
+  }
+  .mat-mdc-select-panel {
+    background: #333 !important;
+    color: #fff !important;
+  }
+  .mat-mdc-option {
+    color: #fff !important;
+  }
+}
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
