@@ -27,7 +27,7 @@ function createWindow() {
 
     // Загружаем index.html
     const startUrl = isDev 
-      ? 'http://localhost:4200' 
+      ? 'http://localhost:3001' 
       : `file://${path.join(__dirname, '../dist/webrtc-analyzer/browser/index.html')}`;
     
     log.info('Loading URL:', startUrl);
@@ -52,7 +52,7 @@ function createWindow() {
         `Не удалось загрузить приложение: ${errorDescription}\nКод ошибки: ${errorCode}`);
       
       if (isDev) {
-        mainWindow.loadURL('http://localhost:4200');
+        mainWindow.loadURL('http://localhost:3001');
       }
     });
 

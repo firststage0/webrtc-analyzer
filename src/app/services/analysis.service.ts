@@ -50,10 +50,12 @@ export class AnalysisService {
     }
 
     return new Observable(observer => {
-      const prompt = `Проанализируй данный webrtc лог ${request.log.content} и дай развернутый ответ с рекомендациями по улучшению. Для анализа используй эту инструкцию ${request.instruction.content}`;
+      const prompt = `Проанализируй данный webrtc лог ${request.log.content} и дай развернутый ответ с рекомендациями по улучшению. Для анализа используй эту инструкцию ${request.instruction.content}; `;
       this.http.post(this.API_URL, {
         model: request.model,
-        prompt
+        prompt,
+        temperature: 0.2,
+        max_tokens: 1000
       }, {
         headers: {
           'Authorization': `Bearer ${apiKey}`,
@@ -87,27 +89,23 @@ export class AnalysisService {
     });
   }
 
-  getAnalysisResult(id: string): AnalysisResult | undefined {
-    return this.analysisResults.value.find(result => result.id === id);
+  private saveResults() {
+    localStorage.setItem('analysisResults', JSON.stringify(this.analysisResults.value));
   }
 
-  getAnalysisResultsByLog(logId: string): AnalysisResult[] {
-    return this.analysisResults.value.filter(result => result.logId === logId);
-  }
-
-  deleteAnalysisResult(id: string): void {
+  deleteResult(id: string): void {
     const updatedResults = this.analysisResults.value.filter(result => result.id !== id);
     this.analysisResults.next(updatedResults);
     this.saveResults();
   }
 
-  clearAll() {
+  clearAll(): void {
     this.analysisResults.next([]);
     this.saveResults();
   }
 
-  private saveResults(): void {
-    localStorage.setItem('analysisResults', JSON.stringify(this.analysisResults.value));
+  getResult(id: string): AnalysisResult | undefined {
+    return this.analysisResults.value.find(result => result.id === id);
   }
 
   exportSelectedResults(results: AnalysisResult[]): void {
@@ -118,7 +116,6 @@ export class AnalysisService {
       return;
     }
 
-    // Для множественного экспорта создаем zip архив
     const zip = new JSZip();
     results.forEach(result => {
       zip.file(`${result.name}.json`, JSON.stringify(result, null, 2));
@@ -134,18 +131,7 @@ export class AnalysisService {
     });
   }
 
-  deleteResult(id: string): void {
-    const currentResults = this.analysisResults.value;
-    const updatedResults = currentResults.filter(result => result.id !== id);
-    this.analysisResults.next(updatedResults);
-    this.saveResults();
-  }
-
-  getResult(id: string): AnalysisResult | undefined {
-    return this.analysisResults.value.find(result => result.id === id);
-  }
-
-  exportResult(result: AnalysisResult): void {
+  private exportResult(result: AnalysisResult): void {
     const blob = new Blob([JSON.stringify(result, null, 2)], { type: 'application/json' });
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');

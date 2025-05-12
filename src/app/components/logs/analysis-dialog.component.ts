@@ -35,6 +35,7 @@ interface AnalysisDialogData {
         <mat-form-field>
           <mat-label>Модель</mat-label>
           <mat-select [(ngModel)]="selectedModel">
+            <mat-option value="google/gemini-2.5-flash-preview">Gemini 2.5 Flash </mat-option>
             <mat-option value="google/gemma-3-12b-it:free">Gemma 3.12B</mat-option>
             <mat-option value="google/gemini-2.0-flash-exp:free">Google: Gemini 2.0 (Free)</mat-option>
           </mat-select>

@@ -7,12 +7,13 @@
   },
   "scripts": {
     "ng": "ng",
-    "start": "ng serve --watch",
+    "start": "electron .",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "electron": "concurrently \"ng serve\" \"wait-on http://localhost:4200 && electron .\"",
-    "electron-build": "ng build && electron-builder build --win --x64",
+    "electron": "concurrently \"ng serve\" \"wait-on http://localhost:3001 && electron .\"",
+    "package": "ng build && electron-forge package",
+    "make": "ng build && electron-forge make",
     "postinstall": "electron-builder install-app-deps"
   },
   "private": true,
@@ -29,8 +30,8 @@
     "@angular/router": "^19.2.0",
     "@types/jszip": "^3.4.0",
     "chart.js": "^4.4.9",
-    "electron-forge": "^5.2.4",
     "electron-log": "^5.4.0",
+    "electron-squirrel-startup": "^1.0.1",
     "jszip": "^3.10.1",
     "ng2-charts": "^8.0.0",
     "rxjs": "~7.8.0",
@@ -41,10 +42,17 @@
     "@angular-devkit/build-angular": "^19.2.11",
     "@angular/cli": "^19.2.11",
     "@angular/compiler-cli": "^19.2.0",
+    "@electron-forge/cli": "^7.8.1",
+    "@electron-forge/maker-deb": "^7.8.1",
+    "@electron-forge/maker-rpm": "^7.8.1",
+    "@electron-forge/maker-squirrel": "^7.8.1",
+    "@electron-forge/maker-zip": "^7.8.1",
+    "@electron-forge/plugin-auto-unpack-natives": "^7.8.1",
+    "@electron-forge/plugin-fuses": "^7.8.1",
+    "@electron/fuses": "^1.8.0",
     "@types/jasmine": "~5.1.0",
     "concurrently": "^9.1.2",
     "electron": "^36.2.0",
-    "electron-builder": "^26.0.12",
     "electron-is-dev": "^3.0.1",
     "jasmine-core": "~5.6.0",
     "karma": "~6.4.0",
@@ -93,5 +101,34 @@
     "asar": false,
     "removePackageScripts": true,
     "removePackageKeywords": true
+  },
+  "config": {
+    "forge": {
+      "packagerConfig": {
+        "asar": false
+      },
+      "makers": [
+        {
+          "name": "@electron-forge/maker-squirrel",
+          "config": {
+            "name": "webrtc-analyzer"
+          }
+        },
+        {
+          "name": "@electron-forge/maker-zip",
+          "platforms": [
+            "win32"
+          ]
+        },
+        {
+          "name": "@electron-forge/maker-deb",
+          "config": {}
+        },
+        {
+          "name": "@electron-forge/maker-rpm",
+          "config": {}
+        }
+      ]
+    }
   }
 }

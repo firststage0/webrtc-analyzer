@@ -181,10 +181,12 @@ export class LogsComponent {
       this.logsService.addLog(file)
         .then(() => {
           this.notificationService.showSuccess('Лог успешно загружен');
+          input.value = '';
         })
         .catch(error => {
           console.error('Error uploading log:', error);
           this.notificationService.showError('Ошибка при загрузке лога');
+          input.value = '';
         });
     }
   }
