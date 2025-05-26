@@ -28,7 +28,7 @@ function createWindow() {
     // Загружаем index.html
     const startUrl = isDev 
       ? 'http://localhost:3001' 
-      : `file://${path.join(__dirname, '../dist/webrtc-analyzer/browser/index.html')}`;
+      : `file://${path.join(__dirname, '../dist/webrtc-analyzer/index.html')}`;
     
     log.info('Loading URL:', startUrl);
 

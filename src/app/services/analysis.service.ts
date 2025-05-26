@@ -17,12 +17,18 @@ export interface AnalysisResult {
   result: any;
   charts?: Array<{ id: string; type: string }>;
   instructionId: string;
+  temperature?: number;
+  max_tokens?: number;
+  additional_prompt?: string;
 }
 
 export interface AnalysisRequest {
   log: Log;
-  instruction: Instruction;
+  instruction: Instruction | null;
   model: string;
+  temperature?: number;
+  max_tokens?: number;
+  additional_prompt?: string;
 }
 
 @Injectable({
@@ -50,12 +56,19 @@ export class AnalysisService {
     }
 
     return new Observable(observer => {
-      const prompt = `Проанализируй данный webrtc лог ${request.log.content} и дай развернутый ответ с рекомендациями по улучшению. Для анализа используй эту инструкцию ${request.instruction.content}; `;
+      let prompt = `Проанализируй данный webrtc лог ${request.log.content}`;
+      if (request.additional_prompt) {
+        prompt += ` ${request.additional_prompt}`;
+      }
+      if (request.instruction) {
+        prompt += ` Для анализа используй эту инструкцию ${request.instruction.content};`;
+      }
+
       this.http.post(this.API_URL, {
         model: request.model,
         prompt,
-        temperature: 0.2,
-        max_tokens: 1000
+        temperature: request.temperature ?? 0.2,
+        max_tokens: request.max_tokens ?? 1000
       }, {
         headers: {
           'Authorization': `Bearer ${apiKey}`,
@@ -73,7 +86,10 @@ export class AnalysisService {
             date: new Date(),
             name: request.log.name,
             result: response.choices ? response.choices[0].text : response.result || '',
-            instructionId: request.instruction.id
+            instructionId: request.instruction?.id ?? '',
+            temperature: request.temperature,
+            max_tokens: request.max_tokens,
+            additional_prompt: request.additional_prompt
           };
 
           const currentResults = this.analysisResults.value;

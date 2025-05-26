@@ -6,6 +6,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatInputModule } from '@angular/material/input';
+import { MarkdownModule } from 'ngx-markdown';
 import { Log } from '../../services/logs.service';
 import { Instruction } from '../../services/instructions.service';
 import { AnalysisService } from '../../services/analysis.service';
@@ -26,7 +28,9 @@ interface AnalysisDialogData {
     MatButtonModule,
     MatFormFieldModule,
     MatSelectModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatInputModule,
+    MarkdownModule
   ],
   template: `
     <h2 mat-dialog-title>Анализ лога</h2>
@@ -44,10 +48,28 @@ interface AnalysisDialogData {
         <mat-form-field>
           <mat-label>Инструкция</mat-label>
           <mat-select [(ngModel)]="selectedInstruction">
+            <mat-option [value]="null">Без инструкции</mat-option>
             @for (instruction of instructions$ | async; track instruction.id) {
               <mat-option [value]="instruction">{{ instruction.name }}</mat-option>
             }
           </mat-select>
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Температура</mat-label>
+          <input matInput type="number" [(ngModel)]="temperature" min="0" max="1" step="0.1">
+          <mat-hint>Значение от 0 до 1. Чем выше значение, тем более креативным будет ответ</mat-hint>
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Максимальное количество токенов</mat-label>
+          <input matInput type="number" [(ngModel)]="maxTokens" min="1" max="4000">
+          <mat-hint>Максимальное количество токенов в ответе</mat-hint>
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Дополнительный запрос</mat-label>
+          <textarea matInput [(ngModel)]="additionalPrompt" rows="3" placeholder="Введите дополнительный запрос для анализа"></textarea>
         </mat-form-field>
       </div>
 
@@ -61,7 +83,7 @@ interface AnalysisDialogData {
       @if (analysisResult) {
         <div class="result">
           <h3>Результат анализа:</h3>
-          <pre>{{ analysisResult.result }}</pre>
+          <markdown [data]="analysisResult.result"></markdown>
         </div>
       }
     </mat-dialog-content>
@@ -93,9 +115,93 @@ interface AnalysisDialogData {
       padding: 16px;
       border-radius: 4px;
 
-      pre {
-        white-space: pre-wrap;
-        word-wrap: break-word;
+      ::ng-deep {
+        .markdown-body {
+          font-family: inherit;
+          font-size: inherit;
+          line-height: 1.6;
+          
+          h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+          }
+
+          h1 { font-size: 2em; }
+          h2 { font-size: 1.5em; }
+          h3 { font-size: 1.25em; }
+          h4 { font-size: 1em; }
+          h5 { font-size: 0.875em; }
+          h6 { font-size: 0.85em; }
+
+          p {
+            margin-top: 0;
+            margin-bottom: 16px;
+          }
+
+          code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+          }
+
+          pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 3px;
+            margin-bottom: 16px;
+
+            code {
+              padding: 0;
+              margin: 0;
+              background-color: transparent;
+              border: 0;
+            }
+          }
+
+          ul, ol {
+            padding-left: 2em;
+            margin-top: 0;
+            margin-bottom: 16px;
+          }
+
+          blockquote {
+            padding: 0 1em;
+            color: #6a737d;
+            border-left: 0.25em solid #dfe2e5;
+            margin: 0 0 16px 0;
+          }
+
+          table {
+            display: block;
+            width: 100%;
+            overflow: auto;
+            margin-top: 0;
+            margin-bottom: 16px;
+            border-spacing: 0;
+            border-collapse: collapse;
+
+            th, td {
+              padding: 6px 13px;
+              border: 1px solid #dfe2e5;
+            }
+
+            tr {
+              background-color: #fff;
+              border-top: 1px solid #c6cbd1;
+
+              &:nth-child(2n) {
+                background-color: #f6f8fa;
+              }
+            }
+          }
+        }
       }
     }
 
@@ -112,12 +218,15 @@ export class AnalysisDialogComponent {
 
   selectedModel = 'deepseek/deepseek-coder-33b-instruct';
   selectedInstruction: Instruction | null = null;
+  temperature = 0.2;
+  maxTokens = 1000;
+  additionalPrompt = '';
   isAnalyzing = false;
   analysisResult: any = null;
   instructions$ = this.instructionsService.instructions$;
 
   get canAnalyze(): boolean {
-    return !!this.selectedModel && !!this.selectedInstruction;
+    return !!this.selectedModel;
   }
 
   constructor(
@@ -130,7 +239,7 @@ export class AnalysisDialogComponent {
   }
 
   onAnalyze(): void {
-    if (!this.canAnalyze || !this.selectedInstruction) return;
+    if (!this.canAnalyze) return;
 
     this.isAnalyzing = true;
     this.analysisResult = null;
@@ -138,7 +247,10 @@ export class AnalysisDialogComponent {
     this.analysisService.analyzeLog({
       log: this.data.log,
       instruction: this.selectedInstruction,
-      model: this.selectedModel
+      model: this.selectedModel,
+      temperature: this.temperature,
+      max_tokens: this.maxTokens,
+      additional_prompt: this.additionalPrompt
     }).subscribe({
       next: (result) => {
         this.analysisResult = result;

@@ -239,6 +239,8 @@ export class InstructionsComponent {
       data: { instruction },
       width: '900px',
       maxWidth: '900px',
+      height: '75vh',
+      maxHeight: '75vh'
     });
 
     dialogRef.afterClosed().subscribe(result => {

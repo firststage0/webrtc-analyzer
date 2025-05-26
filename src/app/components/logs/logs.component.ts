@@ -97,6 +97,7 @@ import { LogEditDialogComponent } from './log-edit-dialog.component';
         type="file"
         accept=".txt,.json"
         style="display: none"
+        multiple
         (change)="onFileSelected($event)"
       />
     </div>
@@ -177,15 +178,17 @@ export class LogsComponent {
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (input.files?.length) {
-      const file = input.files[0];
-      this.logsService.addLog(file)
+      const files = Array.from(input.files);
+      const uploadPromises = files.map(file => this.logsService.addLog(file));
+      
+      Promise.all(uploadPromises)
         .then(() => {
-          this.notificationService.showSuccess('Лог успешно загружен');
+          this.notificationService.showSuccess(`Загружено ${files.length} логов`);
           input.value = '';
         })
         .catch(error => {
-          console.error('Error uploading log:', error);
-          this.notificationService.showError('Ошибка при загрузке лога');
+          console.error('Error uploading logs:', error);
+          this.notificationService.showError('Ошибка при загрузке логов');
           input.value = '';
         });
     }
