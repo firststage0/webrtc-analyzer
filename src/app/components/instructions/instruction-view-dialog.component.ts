@@ -33,8 +33,8 @@ interface InstructionViewDialogData {
     .content-container {
       padding: 16px;
       border-radius: 4px;
-      max-height: 75vh;
-      height: 75vh;
+      max-height: 50vh;
+      height: 50vh;
       overflow-y: auto;
     }
 
