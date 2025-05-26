@@ -40,8 +40,8 @@ interface AnalysisDialogData {
           <mat-label>Модель</mat-label>
           <mat-select [(ngModel)]="selectedModel">
             <mat-option value="google/gemini-2.5-flash-preview">Gemini 2.5 Flash </mat-option>
-            <mat-option value="google/gemma-3-12b-it:free">Gemma 3.12B</mat-option>
-            <mat-option value="google/gemini-2.0-flash-exp:free">Google: Gemini 2.0 (Free)</mat-option>
+            <mat-option value="meta-llama/llama-4-scout:free">Llama 4 Scout</mat-option>
+            <mat-option value="deepseek/deepseek-chat-v3-0324:free">DeepSeek Chat</mat-option>
           </mat-select>
         </mat-form-field>
 
