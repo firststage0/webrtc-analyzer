@@ -13,7 +13,7 @@
     "test": "ng test",
     "electron": "concurrently \"ng serve\" \"wait-on http://localhost:3001 && electron .\"",
     "package": "ng build && electron-forge package",
-    "make": "ng build && electron-forge make",
+    "make": "ng build --configuration production && electron-forge make",
     "postinstall": "electron-builder install-app-deps"
   },
   "private": true,
@@ -75,12 +75,12 @@
     "files": [
       "dist/**/*",
       "electron/**/*",
-      "node_modules/**/*"
+      "package.json"
     ],
     "extraResources": [
       {
-        "from": "node_modules",
-        "to": "node_modules"
+        "from": "dist",
+        "to": "dist"
       }
     ],
     "win": {
@@ -100,35 +100,38 @@
       "createStartMenuShortcut": true,
       "shortcutName": "WebRTC Analyzer"
     },
-    "asar": false,
+    "asar": true,
     "removePackageScripts": true,
     "removePackageKeywords": true
   },
   "config": {
     "forge": {
       "packagerConfig": {
-        "asar": false
+        "asar": true,
+        "extraResource": [
+          "dist"
+        ]
       },
       "makers": [
         {
           "name": "@electron-forge/maker-squirrel",
           "config": {
-            "name": "webrtc-analyzer"
+            "name": "webrtc-analyzer",
+            "authors": "WebRTC Analyzer Team",
+            "description": "WebRTC Log Analyzer Application",
+            "noMsi": true
           }
         },
         {
           "name": "@electron-forge/maker-zip",
           "platforms": [
             "win32"
-          ]
-        },
-        {
-          "name": "@electron-forge/maker-deb",
-          "config": {}
-        },
-        {
-          "name": "@electron-forge/maker-rpm",
-          "config": {}
+          ],
+          "config": {
+            "options": {
+              "name": "webrtc-analyzer"
+            }
+          }
         }
       ]
     }

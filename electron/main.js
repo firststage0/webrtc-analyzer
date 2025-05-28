@@ -1,6 +1,6 @@
 const { app, BrowserWindow, dialog } = require('electron');
 const path = require('path');
-const isDev = require('electron-is-dev');
+const isDev = process.env.NODE_ENV === 'development';
 
 // Включаем логирование
 const log = require('electron-log');
@@ -28,7 +28,7 @@ function createWindow() {
     // Загружаем index.html
     const startUrl = isDev 
       ? 'http://localhost:3001' 
-      : `file://${path.join(__dirname, '../dist/webrtc-analyzer/index.html')}`;
+      : `file://${path.resolve(app.getAppPath(), 'dist', 'webrtc-analyzer', 'index.html')}`;
     
     log.info('Loading URL:', startUrl);
 
@@ -48,8 +48,11 @@ function createWindow() {
     // Обработка ошибок загрузки
     mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
       log.error('Failed to load:', errorCode, errorDescription);
+      log.error('Attempted URL:', startUrl);
+      log.error('Current directory:', app.getAppPath());
+      
       dialog.showErrorBox('Ошибка загрузки', 
-        `Не удалось загрузить приложение: ${errorDescription}\nКод ошибки: ${errorCode}`);
+        `Не удалось загрузить приложение: ${errorDescription}\nКод ошибки: ${errorCode}\nПроверьте логи для подробностей.`);
       
       if (isDev) {
         mainWindow.loadURL('http://localhost:3001');
