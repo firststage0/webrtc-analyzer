@@ -13,7 +13,7 @@
     "test": "ng test",
     "electron": "concurrently \"ng serve\" \"wait-on http://localhost:3001 && electron .\"",
     "package": "ng build && electron-forge package",
-    "make": "ng build --configuration production && electron-forge make",
+    "make": "ng build --configuration production && set NODE_OPTIONS=--no-deprecation && electron-forge make",
     "postinstall": "electron-builder install-app-deps"
   },
   "private": true,

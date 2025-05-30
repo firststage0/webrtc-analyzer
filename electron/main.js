@@ -7,12 +7,14 @@ const log = require('electron-log');
 log.transports.file.level = 'debug';
 log.info('App starting...');
 
+let mainWindow = null;
+
 function createWindow() {
   try {
     log.info('Creating main window...');
     
     // Создаем окно браузера
-    const mainWindow = new BrowserWindow({
+    mainWindow = new BrowserWindow({
       width: 1200,
       height: 800,
       show: false, // Скрываем окно до полной загрузки
@@ -25,10 +27,16 @@ function createWindow() {
       }
     });
 
-    // Загружаем index.html
-    const startUrl = isDev 
-      ? 'http://localhost:3001' 
-      : `file://${path.resolve(app.getAppPath(), 'dist', 'webrtc-analyzer', 'index.html')}`;
+    // Определяем правильный путь к index.html
+    let startUrl;
+    if (isDev) {
+      startUrl = 'http://localhost:3001';
+    } else {
+      // В production режиме используем правильный путь к файлам в app.asar
+      const appPath = app.getAppPath();
+      log.info('App path:', appPath);
+      startUrl = `file://${path.join(appPath, 'dist', 'webrtc-analyzer', 'index.html')}`;
+    }
     
     log.info('Loading URL:', startUrl);
 
@@ -36,6 +44,20 @@ function createWindow() {
     mainWindow.once('ready-to-show', () => {
       log.info('Window ready to show');
       mainWindow.show();
+    });
+
+    // Обработка обновления страницы
+    mainWindow.webContents.on('before-input-event', (event, input) => {
+      if (input.control && input.key.toLowerCase() === 'r') {
+        event.preventDefault();
+        log.info('Manual reload requested');
+        
+        // Очищаем кэш перед перезагрузкой
+        mainWindow.webContents.session.clearCache().then(() => {
+          log.info('Cache cleared');
+          mainWindow.loadURL(startUrl);
+        });
+      }
     });
 
     mainWindow.loadURL(startUrl);
@@ -51,21 +73,40 @@ function createWindow() {
       log.error('Attempted URL:', startUrl);
       log.error('Current directory:', app.getAppPath());
       
+      // Специальная обработка для ошибки -6 (ERR_FILE_NOT_FOUND)
+      if (errorCode === -6) {
+        log.error('File not found error detected');
+        if (isDev) {
+          log.info('Attempting to reload development server');
+          mainWindow.loadURL('http://localhost:3001');
+        } else {
+          // В production режиме пробуем перезагрузить из правильного пути
+          log.info('Attempting to reload from:', startUrl);
+          mainWindow.loadURL(startUrl);
+        }
+        return;
+      }
+      
       dialog.showErrorBox('Ошибка загрузки', 
         `Не удалось загрузить приложение: ${errorDescription}\nКод ошибки: ${errorCode}\nПроверьте логи для подробностей.`);
-      
-      if (isDev) {
-        mainWindow.loadURL('http://localhost:3001');
-      }
     });
 
-    // Логируем успешную загрузку
+    // Добавляем обработчик для успешной загрузки
     mainWindow.webContents.on('did-finish-load', () => {
       log.info('Window loaded successfully');
+      log.info('Current URL:', mainWindow.webContents.getURL());
+    });
+
+    // Добавляем обработчик для ошибок рендеринга
+    mainWindow.webContents.on('render-process-gone', (event, details) => {
+      log.error('Render process gone:', details);
+      dialog.showErrorBox('Ошибка рендеринга', 
+        `Процесс рендеринга завершился: ${details.reason}\nКод: ${details.exitCode}`);
     });
 
     mainWindow.on('closed', () => {
       log.info('Window closed');
+      mainWindow = null;
     });
 
   } catch (error) {
@@ -85,7 +126,7 @@ app.on('window-all-closed', () => {
 
 app.on('activate', () => {
   log.info('App activated');
-  if (BrowserWindow.getAllWindows().length === 0) {
+  if (mainWindow === null) {
     createWindow();
   }
 });
